@@ -1,14 +1,17 @@
 package Data.Processing.DataMining.Service;
 import org.springframework.stereotype.Service;
 
-import Data.Processing.DataMining.Entity.DatasetEntity;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import weka.core.Instances;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Discretize;
+import weka.filters.unsupervised.attribute.Normalize;
+import weka.filters.unsupervised.attribute.Standardize;
 import weka.filters.unsupervised.attribute.Remove;
+import weka.filters.unsupervised.attribute.RemoveUseless;
 import weka.filters.unsupervised.attribute.ReplaceMissingValues;
+import weka.filters.unsupervised.attribute.StringToNominal;
 import weka.filters.unsupervised.instance.NonSparseToSparse;
 import weka.filters.unsupervised.instance.RemoveWithValues;
 
@@ -19,21 +22,12 @@ public class DataProcessingService {
 
     //This will return new dataset without input attributes array, the old dataset will not be replaced.
     //The input is taken as an array of string
-    public Instances removeAttributes(DatasetEntity dataset, String[] inputOptions) throws Exception{
+    public Instances removeAttributes(Instances dataset, String[] inputOptions) throws Exception{
         Remove remove = new Remove();
-        remove.setOptions(inputOptions);
-        remove.setInputFormat(dataset.getDataset());
-        Instances newDataset = Filter.useFilter(dataset.getDataset(), remove);
-        return newDataset;
-    }
-
-    //This will return new dataset without input attributes array, the old dataset will not be replaced.
-    //The input is taken as a string
-    public Instances removeAttributes(DatasetEntity dataset, String inputOptions) throws Exception{
-        Remove remove = new Remove();
-        remove.setOptions(weka.core.Utils.splitOptions(inputOptions));
-        remove.setInputFormat(dataset.getDataset());
-        Instances newDataset = Filter.useFilter(dataset.getDataset(), remove);
+        if(inputOptions != null)
+            remove.setOptions(inputOptions);
+        remove.setInputFormat(dataset);
+        Instances newDataset = Filter.useFilter(dataset, remove);
         return newDataset;
     }
 
@@ -44,41 +38,79 @@ public class DataProcessingService {
     //{0 1, 1 4, 5 2, 6 78} the dataset becomes shorter when very index there are 2 number represent the current index and 
     //current value.
     //This will make the dataset more efficient if there are too many '0' valued-attribute in the dataset 
-    public Instances sparseData(DatasetEntity dataset) throws Exception{
+    public Instances sparseData(Instances dataset) throws Exception{
         NonSparseToSparse sparseFilter = new NonSparseToSparse();
-        sparseFilter.setInputFormat(dataset.getDataset());
-        Instances newDataset = Filter.useFilter(dataset.getDataset(), sparseFilter);
+        sparseFilter.setInputFormat(dataset);
+        Instances newDataset = Filter.useFilter(dataset, sparseFilter);
         return newDataset;
     }
 
     //Use for reducing noise, smoothing dataset
-    public Instances discretizing(DatasetEntity dataset, String[] inputOptions) throws Exception{
+    public Instances discretizing(Instances dataset, String[] inputOptions) throws Exception{
         Discretize discretize = new Discretize();
-        discretize.setOptions(inputOptions);
-        discretize.setInputFormat(dataset.getDataset());
-        Instances newDataset = Filter.useFilter(dataset.getDataset(), discretize);
+        if(inputOptions != null)
+            discretize.setOptions(inputOptions);
+        discretize.setInputFormat(dataset);
+        Instances newDataset = Filter.useFilter(dataset, discretize);
         return newDataset;
     }
 
-    public Instances discretizing(DatasetEntity dataset, String inputOptions) throws Exception{
-        Discretize discretize = new Discretize();
-        discretize.setOptions(weka.core.Utils.splitOptions(inputOptions));
-        discretize.setInputFormat(dataset.getDataset());
-        Instances newDataset = Filter.useFilter(dataset.getDataset(), discretize);
-        return newDataset;
-    }
-
-    public Instances replaceMissingValue(DatasetEntity dataset) throws Exception {
+    public Instances replaceMissingValue(Instances dataset, String[] inputOptions) throws Exception {
         ReplaceMissingValues replace = new ReplaceMissingValues();
-        replace.setInputFormat(dataset.getDataset());
-        Instances newDataset = Filter.useFilter(dataset.getDataset(), replace);
+        if(inputOptions != null)
+            replace.setOptions(inputOptions);
+        replace.setInputFormat(dataset);
+        Instances newDataset = Filter.useFilter(dataset, replace);
         return newDataset;
     }
 
-    public Instances removeMissingValue(DatasetEntity dataset) throws Exception {
+    public Instances removeMissingValue(Instances dataset, String[] inputOptions) throws Exception {
         RemoveWithValues remove = new RemoveWithValues();
-        remove.setInputFormat(dataset.getDataset());
-        Instances newDataset = Filter.useFilter(dataset.getDataset(), remove);
+        if(inputOptions != null)
+            remove.setOptions(inputOptions);
+        remove.setInputFormat(dataset);
+        Instances newDataset = Filter.useFilter(dataset, remove);
+        return newDataset;
+    }
+
+    //Remove attributes with little to no impact to dataset
+    public Instances removeUseless(Instances dataset, String[] inputOptions) throws Exception {
+        RemoveUseless remove = new RemoveUseless();
+        if(inputOptions != null)
+            remove.setOptions(inputOptions);
+        remove.setInputFormat(dataset);
+        Instances newDataset = Filter.useFilter(dataset, remove);
+        return newDataset;
+    }
+
+    //Turn String data in dataset into Nomial data that weka could read
+    public Instances stringToNomial(Instances dataset, String[] inputOptions) throws Exception {
+        StringToNominal filter = new StringToNominal();
+        if(inputOptions != null)
+            filter.setOptions(inputOptions);
+        filter.setAttributeRange("first-last"); 
+        filter.setInputFormat(dataset);
+        Instances newDataset = Filter.useFilter(dataset, filter);
+        return newDataset;
+    }
+
+    //Rescales numeric values to [0,1]
+    public Instances Normalize(Instances dataset, String[] inputOptions) throws Exception {
+        Normalize normalize = new Normalize();
+        if(inputOptions != null)
+            normalize.setOptions(inputOptions);
+        normalize.setInputFormat(dataset);
+        Instances newDataset = Filter.useFilter(dataset, normalize);
+        return newDataset;
+    }
+
+    //Standardizes values (zero mean, unit variance)
+    public Instances Standardize(Instances dataset, String[] inputOptions) throws Exception {
+        Standardize standardize = new Standardize();
+        if(inputOptions != null)
+            standardize.setOptions(inputOptions);
+        standardize.setInputFormat(dataset);
+        Instances newDataset = Filter.useFilter(dataset, standardize);
         return newDataset;
     }
 

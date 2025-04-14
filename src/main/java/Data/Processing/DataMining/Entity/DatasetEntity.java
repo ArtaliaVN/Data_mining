@@ -13,6 +13,7 @@ import weka.core.converters.ConverterUtils.DataSource;
 
 @Data
 public class DatasetEntity {
+
     private Instances dataset;
 
     private int instancesNumber;
@@ -23,6 +24,7 @@ public class DatasetEntity {
         InputStream inputStream = new ByteArrayInputStream(file); 
         DataSource dataSource = new DataSource(inputStream);
         this.dataset = dataSource.getDataSet();
+        this.dataset.setClassIndex(dataset.numAttributes() - 1);
         this.instancesNumber = dataset.numInstances();
         this.attributesNumber = dataset.numAttributes();
     }
@@ -59,4 +61,5 @@ public class DatasetEntity {
         this.instancesNumber = dataset.numInstances();
         this.attributesNumber = dataset.numAttributes();
     }
+    
 }

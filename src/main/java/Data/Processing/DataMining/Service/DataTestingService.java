@@ -1,14 +1,16 @@
 package Data.Processing.DataMining.Service;
 
-import Data.Processing.DataMining.Entity.DatasetEntity;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
+import weka.core.Instances;
 
 public class DataTestingService {
 
-    public Evaluation NaiveBayes(DatasetEntity trainingDataset, DatasetEntity testingDataset, Classifier classifier) throws Exception{
-        Evaluation eval = new Evaluation(trainingDataset.getDataset());
-        eval.evaluateModel(classifier, testingDataset.getDataset());
+    public Evaluation evaluation(Instances trainingDataset, Instances testingDataset, Classifier classifier) throws Exception{
+        trainingDataset.setClassIndex(trainingDataset.numAttributes() - 1);
+        testingDataset.setClassIndex(testingDataset.numAttributes() - 1);
+        Evaluation eval = new Evaluation(trainingDataset);
+        eval.evaluateModel(classifier, testingDataset);
         return eval;
     }
 

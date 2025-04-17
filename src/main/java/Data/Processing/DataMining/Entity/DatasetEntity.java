@@ -34,6 +34,7 @@ public class DatasetEntity {
             case "arff" -> {
                 DataSource dataSource = new DataSource(filePath);
                 this.dataset = dataSource.getDataSet();
+                this.dataset.setClassIndex(dataset.numAttributes() - 1);
                 this.instancesNumber = dataset.numInstances();
                 this.attributesNumber = dataset.numAttributes();
             }
@@ -42,6 +43,7 @@ public class DatasetEntity {
                 CSVLoader loader = new CSVLoader();
                 loader.setSource(new File(filePath));
                 this.dataset = loader.getDataSet();
+                this.dataset.setClassIndex(dataset.numAttributes() - 1);
                 this.instancesNumber = dataset.numInstances();
                 this.attributesNumber = dataset.numAttributes();
             }

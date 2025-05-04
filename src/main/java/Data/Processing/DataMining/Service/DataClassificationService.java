@@ -16,6 +16,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class DataClassificationService {
 
+    public Classifier classifierMapper(String string, Instances dataset, String[] options) throws Exception{
+        return switch(string.toLowerCase()){
+            case "naivebayes" -> NaiveBayes(dataset, options);
+            case "oner" -> OneR(dataset, options);
+            case "zeror" -> ZeroR(dataset, options);
+            case "bayesnet" -> BayesNet(dataset, options);
+            default -> J48(dataset, options);
+        };
+    }
+
     public Classifier J48(Instances dataset, String[] options) throws Exception{
         J48 j48 = new J48();
         if(options != null)

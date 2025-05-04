@@ -1,57 +1,47 @@
 package Data.Processing.DataMining.Service;
-<<<<<<< Updated upstream
-=======
 import java.io.File;
 
->>>>>>> Stashed changes
 import org.springframework.stereotype.Service;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import weka.core.Instances;
-<<<<<<< Updated upstream
-import weka.filters.Filter;
-import weka.filters.unsupervised.attribute.Discretize;
-import weka.filters.unsupervised.attribute.Normalize;
-=======
 import weka.core.converters.ArffSaver;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Discretize;
 import weka.filters.unsupervised.attribute.Normalize;
 import weka.filters.unsupervised.attribute.NumericToNominal;
->>>>>>> Stashed changes
 import weka.filters.unsupervised.attribute.Standardize;
 import weka.filters.unsupervised.attribute.Remove;
 import weka.filters.unsupervised.attribute.RemoveUseless;
 import weka.filters.unsupervised.attribute.ReplaceMissingValues;
 import weka.filters.unsupervised.attribute.StringToNominal;
 import weka.filters.unsupervised.instance.NonSparseToSparse;
-<<<<<<< Updated upstream
-=======
 import weka.filters.unsupervised.instance.RemoveDuplicates;
->>>>>>> Stashed changes
 import weka.filters.unsupervised.instance.RemoveWithValues;
 
 @Service
 @Data
 @NoArgsConstructor
 public class DataProcessingService {
-<<<<<<< Updated upstream
 
-    //This will return new dataset without input attributes array, the old dataset will not be replaced.
-    //The input is taken as an array of string
-    public Instances removeAttributes(Instances dataset, String[] inputOptions) throws Exception{
-        Remove remove = new Remove();
-        if(inputOptions != null)
-            remove.setOptions(inputOptions);
-        remove.setInputFormat(dataset);
-        Instances newDataset = Filter.useFilter(dataset, remove);
-        return newDataset;
+    public Instances processingMapping(String command, Instances dataset, String[] inputOptions) throws Exception{
+        return switch(command.toLowerCase()){
+            case "removeduplicates" -> removeDuplicates(dataset);
+            case "standardize" -> standardize(dataset, inputOptions);
+            case "discretizing" -> discretizing(dataset, inputOptions);
+            case "replacemissingvalue" -> replaceMissingValue(dataset, inputOptions);
+            case "removemissingvalue" -> removeMissingValue(dataset, inputOptions);
+            case "removeuseless" -> removeUseless(dataset, inputOptions);
+            case "normalize" -> normalize(dataset, inputOptions);
+            case "numerictonomial" -> numericToNomial(dataset, inputOptions);
+            case "stringtonomial" -> stringToNomial(dataset, inputOptions);
+            case "sparsedata" -> sparseData(dataset);
+            default -> dataset;
+        };
     }
-
-=======
    
-    public void processing(Instances dataset) throws Exception{
+    public Instances processing(Instances dataset) throws Exception{
         System.out.println("Processing dataset...");
         if(checkForDuplicates(dataset)>0){
             dataset = removeDuplicates(dataset);
@@ -76,27 +66,22 @@ public class DataProcessingService {
         //save dataset to file
         String filePath = "src/main/java/Data/Datasets/preprocessing_dataset.arff";
         saveDataset(filePath, dataset);
+        return dataset;
     }
 
     //save dataset to file
     public void saveDataset(String filePath, Instances dataset) throws Exception {
         System.out.println("Saving dataset to " + filePath);
         ArffSaver saver = new ArffSaver();
-        try{
-            saver.setInstances(dataset);
-            saver.setFile(new File(filePath));
-            saver.writeBatch();
-            System.out.println("Dataset saved successfully.");
-        }catch (Exception e){
-            System.out.println("Error: " + e.getMessage());
-        }
+        saver.setInstances(dataset);
+        saver.setFile(new File(filePath));
+        saver.writeBatch();
+        System.out.println("Dataset saved successfully.");
+        
     }
 
     public Instances removeDuplicates(Instances dataset) throws Exception{
         System.out.println("Removing duplicates...");
-        if (dataset.classIndex() != -1 && dataset.classAttribute().numValues() <= 1) {
-            dataset.setClassIndex(-1);  // Weka filter can't handle unary class
-        }
 
         RemoveDuplicates removeDuplicates = new RemoveDuplicates();
         removeDuplicates.setInputFormat(dataset);
@@ -138,7 +123,6 @@ public class DataProcessingService {
         return newDataset;
     }
 
->>>>>>> Stashed changes
     //For working with dataset type with multiple repetive '0' attribute, this function reduces the dataset
     //in shorter manner
     //Example:
@@ -203,7 +187,7 @@ public class DataProcessingService {
     }
 
     //Rescales numeric values to [0,1]
-    public Instances Normalize(Instances dataset, String[] inputOptions) throws Exception {
+    public Instances normalize(Instances dataset, String[] inputOptions) throws Exception {
         Normalize normalize = new Normalize();
         if(inputOptions != null)
             normalize.setOptions(inputOptions);
@@ -213,7 +197,7 @@ public class DataProcessingService {
     }
 
     //Standardizes values (zero mean, unit variance)
-    public Instances Standardize(Instances dataset, String[] inputOptions) throws Exception {
+    public Instances standardize(Instances dataset, String[] inputOptions) throws Exception {
         Standardize standardize = new Standardize();
         if(inputOptions != null)
             standardize.setOptions(inputOptions);
@@ -222,9 +206,7 @@ public class DataProcessingService {
         return newDataset;
     }
 
-<<<<<<< Updated upstream
-=======
-    public Instances RemoveDuplication(Instances dataset, String[] inputOptions) throws Exception{
+    public Instances removeDuplication(Instances dataset, String[] inputOptions) throws Exception{
         RemoveDuplicates removeDuplicates = new RemoveDuplicates();
         if(inputOptions != null)
             removeDuplicates.setOptions(inputOptions);
@@ -233,7 +215,7 @@ public class DataProcessingService {
         return newDataset;
     }
 
-    public Instances NumericToNomial(Instances dataset, String[] inputOptions) throws Exception{
+    public Instances numericToNomial(Instances dataset, String[] inputOptions) throws Exception{
         NumericToNominal numericToNominal = new NumericToNominal();
         if(inputOptions != null)
             numericToNominal.setOptions(inputOptions);
@@ -242,5 +224,4 @@ public class DataProcessingService {
         return newDataset;
     }
 
->>>>>>> Stashed changes
 }

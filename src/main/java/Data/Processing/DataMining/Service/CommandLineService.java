@@ -70,7 +70,7 @@ public class CommandLineService {
             commandMapper(list.get(0), "", "");
         }
         if(list.size() == 2){
-            commandMapper(list.get(0), list.get(1), null);
+            commandMapper(list.get(0), list.get(1), "");
         }
         if(list.size() >= 3){
             commandMapper(list.get(0), list.get(1), list.get(2));

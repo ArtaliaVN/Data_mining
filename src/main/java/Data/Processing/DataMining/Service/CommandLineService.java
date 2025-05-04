@@ -5,28 +5,36 @@ import java.util.List;
 import java.util.Scanner;
 
 import Data.Processing.DataMining.Entity.DatasetEntity;
+import weka.classifiers.Classifier;
 import weka.core.Utils;
 
 public class CommandLineService {
-    private Scanner scanner = new Scanner(System.in);
+    private final Scanner scanner = new Scanner(System.in);
     private boolean isRunning = true;
     private String currentCommand = "";
     private DatasetEntity datasetEntity;
+    private DatasetEntity workingEntity;
+    private Classifier workingClassifier;
 
-    private DataProcessingService dataProcessingService;
+    private final DataProcessingService dataProcessingService;
 
-    private DataClassificationService dataClassificationService;
+    private final DataClassificationService dataClassificationService;
 
-    private DataTestingService dataTestingService;
+    private final DataTestingService dataTestingService;
 
-    public void cmdRunning() throws Exception{
+    public CommandLineService(){
         this.dataClassificationService = new DataClassificationService();
         this.dataProcessingService = new DataProcessingService();
         this.dataTestingService = new DataTestingService();
+    }
+
+    public void cmdRunning() throws Exception{
+        
         while(isRunning){
             if(this.datasetEntity == null){
                 System.out.println("Path to dataset (arff or csv): ");
                 this.datasetEntity = new DatasetEntity(scanner.nextLine()); 
+                this.workingEntity = this.datasetEntity;
                 System.out.println(this.datasetEntity.getDataset().toSummaryString());
             }
             System.out.println("Enter your command: ");
@@ -37,10 +45,13 @@ public class CommandLineService {
 
     private void commandMapper(String command1, String command2, String options) {
         try{
-            switch(command1){
+            switch(command1.toLowerCase()){
                 case "stop" -> stop();
                 case "classifier" -> callClassifier(command2, options);
                 case "processing" -> callProcessing(command2, options);
+                case "reset" -> callReset();
+                case "index" -> callSetClassIndex(command2);
+                case "predict" -> callTesting(command2);
                 default -> System.out.println("Invalid command");
             }
         } catch (Exception e){
@@ -82,24 +93,40 @@ public class CommandLineService {
     }
 
     private void callProcessing(String processType, String options) throws Exception{
-        datasetEntity.setDataset(dataProcessingService.processingMapping(processType, datasetEntity.getDataset(), Utils.splitOptions(options)));
-        System.out.println(datasetEntity.getDataset().toSummaryString());
+        workingEntity.setDataset(dataProcessingService.processingMapping(processType, workingEntity.getDataset(), Utils.splitOptions(options)));
+        System.out.println(workingEntity.getDataset().toSummaryString());
     }
 
     private void callClassifier(String processType, String options) throws Exception{
-        System.out.println(dataClassificationService.classifierMapper(processType, datasetEntity.getDataset(), Utils.splitOptions(options)));
+        workingClassifier = dataClassificationService.classifierMapper(processType, workingEntity.getDataset(), Utils.splitOptions(options));
+        System.out.println(workingClassifier);
     }
 
-    private void callTesting(String command, String path) throws Exception{
+    private void callReset(){
+        this.workingEntity = this.datasetEntity;
+        System.out.println("Working data has been reset");
+    }
+
+    private void callTesting(String path) throws Exception{
         DatasetEntity testingEntity = new DatasetEntity(path);
-        int lB = 0;
-        int hB = 0;
-        if(command.length() == 0)
+        testingEntity.getDataset().setClassIndex(workingEntity.getDataset().classIndex());
+        if(workingClassifier == null){
+            System.err.println("This action requires classification");
             return;
-        for(int i = 0; i < command.length(); i++){
-            if(command.charAt(i) == ' ')
-                hB = i - 1;
         }
+
+        System.out.println(dataTestingService.evaluation(workingEntity.getDataset(), testingEntity.getDataset(), workingClassifier));
+    }
+
+    private void callSetClassIndex(String inputIndex) throws Exception{
+        int index = Integer.parseInt(inputIndex);
+        if(index > workingEntity.getDataset().numAttributes() || index < 0){
+            System.out.println("Invalid index");
+            return;
+        }
+
+        workingEntity.getDataset().setClassIndex(index);
+        System.out.println("New class index:" + workingEntity.getDataset().classIndex());
     }
 
     private void stop(){

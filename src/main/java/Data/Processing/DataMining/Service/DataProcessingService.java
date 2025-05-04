@@ -1,29 +1,24 @@
 package Data.Processing.DataMining.Service;
 import java.io.File;
 
-import org.springframework.stereotype.Service;
-
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import weka.core.Instances;
 import weka.core.converters.ArffSaver;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Discretize;
 import weka.filters.unsupervised.attribute.Normalize;
 import weka.filters.unsupervised.attribute.NumericToNominal;
-import weka.filters.unsupervised.attribute.Standardize;
 import weka.filters.unsupervised.attribute.Remove;
 import weka.filters.unsupervised.attribute.RemoveUseless;
 import weka.filters.unsupervised.attribute.ReplaceMissingValues;
+import weka.filters.unsupervised.attribute.Standardize;
 import weka.filters.unsupervised.attribute.StringToNominal;
 import weka.filters.unsupervised.instance.NonSparseToSparse;
 import weka.filters.unsupervised.instance.RemoveDuplicates;
 import weka.filters.unsupervised.instance.RemoveWithValues;
 
-@Service
-@Data
-@NoArgsConstructor
 public class DataProcessingService {
+
+    public DataProcessingService(){}
 
     public Instances processingMapping(String command, Instances dataset, String[] inputOptions) throws Exception{
         return switch(command.toLowerCase()){

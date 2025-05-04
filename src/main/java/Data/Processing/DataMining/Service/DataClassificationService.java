@@ -1,20 +1,16 @@
 package Data.Processing.DataMining.Service;
 
-import org.springframework.stereotype.Service;
-import weka.classifiers.trees.J48;
-import weka.core.Instances;
 import weka.classifiers.Classifier;
 import weka.classifiers.bayes.BayesNet;
 import weka.classifiers.bayes.NaiveBayes;
 import weka.classifiers.rules.OneR;
 import weka.classifiers.rules.ZeroR;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import weka.classifiers.trees.J48;
+import weka.core.Instances;
 
-@Service
-@Data
-@NoArgsConstructor
 public class DataClassificationService {
+
+    public DataClassificationService(){}
 
     public Classifier classifierMapper(String string, Instances dataset, String[] options) throws Exception{
         return switch(string.toLowerCase()){

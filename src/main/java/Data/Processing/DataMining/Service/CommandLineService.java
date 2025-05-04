@@ -35,12 +35,16 @@ public class CommandLineService {
         }
     }
 
-    private void commandMapper(String command1, String command2, String options) throws Exception{
-        switch(command1){
-            case "stop" -> stop();
-            case "classifier" -> callClassifier(command2, options);
-            case "processing" -> callProcessing(command2, options);
-            default -> System.out.println("Invalid command");
+    private void commandMapper(String command1, String command2, String options) {
+        try{
+            switch(command1){
+                case "stop" -> stop();
+                case "classifier" -> callClassifier(command2, options);
+                case "processing" -> callProcessing(command2, options);
+                default -> System.out.println("Invalid command");
+            }
+        } catch (Exception e){
+            System.out.println("Command error: check for datatype, class index, etc..." + e.getMessage());
         }
     }
 

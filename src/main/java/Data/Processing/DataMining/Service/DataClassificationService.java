@@ -14,10 +14,10 @@ public class DataClassificationService {
 
     public Classifier classifierMapper(String string, Instances dataset, String[] options) throws Exception{
         return switch(string.toLowerCase()){
-            case "naivebayes" -> NaiveBayes(dataset, options);
+            case "naive_bayes" -> NaiveBayes(dataset, options);
             case "oner" -> OneR(dataset, options);
             case "zeror" -> ZeroR(dataset, options);
-            case "bayesnet" -> BayesNet(dataset, options);
+            case "bayes_net" -> BayesNet(dataset, options);
             default -> J48(dataset, options);
         };
     }

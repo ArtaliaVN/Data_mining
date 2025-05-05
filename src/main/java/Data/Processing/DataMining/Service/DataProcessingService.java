@@ -6,6 +6,7 @@ import weka.core.converters.ArffSaver;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Discretize;
 import weka.filters.unsupervised.attribute.Normalize;
+import weka.filters.unsupervised.attribute.NumericCleaner;
 import weka.filters.unsupervised.attribute.NumericToNominal;
 import weka.filters.unsupervised.attribute.Remove;
 import weka.filters.unsupervised.attribute.RemoveUseless;
@@ -22,24 +23,26 @@ public class DataProcessingService {
 
     public Instances processingMapping(String command, Instances dataset, String[] inputOptions) throws Exception{
         return switch(command.toLowerCase()){
-            case "removeduplicates" -> removeDuplicates(dataset);
+            case "remove_duplicates" -> removeDuplicates(dataset, inputOptions);
             case "standardize" -> standardize(dataset, inputOptions);
             case "discretizing" -> discretizing(dataset, inputOptions);
-            case "replacemissingvalue" -> replaceMissingValue(dataset, inputOptions);
-            case "removemissingvalue" -> removeMissingValue(dataset, inputOptions);
-            case "removeuseless" -> removeUseless(dataset, inputOptions);
+            case "replace_missing_value" -> replaceMissingValue(dataset, inputOptions);
+            case "remove_missing_value" -> removeMissingValue(dataset, inputOptions);
+            case "remove_useless" -> removeUseless(dataset, inputOptions);
             case "normalize" -> normalize(dataset, inputOptions);
-            case "numerictonomial" -> numericToNomial(dataset, inputOptions);
-            case "stringtonomial" -> stringToNomial(dataset, inputOptions);
-            case "sparsedata" -> sparseData(dataset);
+            case "numeric_to_nomial" -> numericToNomial(dataset, inputOptions);
+            case "string_to_nomial" -> stringToNomial(dataset, inputOptions);
+            case "remove_attributes" -> removeAttributes(dataset, inputOptions);
+            case "sparse_data" -> sparseData(dataset);
+            case "numeric_cleaner" -> numericCleaner(dataset, inputOptions);
             default -> dataset;
         };
     }
    
-    public Instances processing(Instances dataset) throws Exception{
+    public Instances processing(Instances dataset, String[] inputOptions) throws Exception{
         System.out.println("Processing dataset...");
         if(checkForDuplicates(dataset)>0){
-            dataset = removeDuplicates(dataset);
+            dataset = removeDuplicates(dataset, inputOptions);
             System.out.println(dataset.numInstances());
         } else {
             System.out.println("No duplicates found.");
@@ -75,13 +78,15 @@ public class DataProcessingService {
         
     }
 
-    public Instances removeDuplicates(Instances dataset) throws Exception{
+    public Instances removeDuplicates(Instances dataset, String[] inputOptions) throws Exception{
         System.out.println("Removing duplicates...");
 
         RemoveDuplicates removeDuplicates = new RemoveDuplicates();
+        
         removeDuplicates.setInputFormat(dataset);
         Instances noDuplicates = Filter.useFilter(dataset, removeDuplicates);
-
+        if(inputOptions != null)
+            removeDuplicates.setOptions(inputOptions);
         int originalCount = dataset.numInstances();
         int deduplicatedCount = noDuplicates.numInstances();
         System.out.println("Original count: " + originalCount);
@@ -114,11 +119,10 @@ public class DataProcessingService {
         if(inputOptions != null)
             remove.setOptions(inputOptions);
         remove.setInputFormat(dataset);
-        Instances newDataset = Filter.useFilter(dataset, remove);
-        return newDataset;
+        return Filter.useFilter(dataset, remove);
     }
 
-    //For working with dataset type with multiple repetive '0' attribute, this function reduces the dataset
+    //For working with dataset type with multiple repetitive '0' attribute, this function reduces the dataset
     //in shorter manner
     //Example:
     //{1,4,0,0,0,2,78,0,0,0,0} we have 7 '0' attributes which will expand the dataset if there are millions of those instances
@@ -128,8 +132,7 @@ public class DataProcessingService {
     public Instances sparseData(Instances dataset) throws Exception{
         NonSparseToSparse sparseFilter = new NonSparseToSparse();
         sparseFilter.setInputFormat(dataset);
-        Instances newDataset = Filter.useFilter(dataset, sparseFilter);
-        return newDataset;
+        return Filter.useFilter(dataset, sparseFilter);
     }
 
     //Use for reducing noise, smoothing dataset
@@ -138,8 +141,15 @@ public class DataProcessingService {
         if(inputOptions != null)
             discretize.setOptions(inputOptions);
         discretize.setInputFormat(dataset);
-        Instances newDataset = Filter.useFilter(dataset, discretize);
-        return newDataset;
+        return Filter.useFilter(dataset, discretize);
+    }
+
+    public Instances numericCleaner(Instances dataset, String[] inputOptions) throws Exception {
+        NumericCleaner numericCleaner = new NumericCleaner();
+        if(inputOptions != null)
+            numericCleaner.setOptions(inputOptions);
+        numericCleaner.setInputFormat(dataset);
+        return Filter.useFilter(dataset, numericCleaner);
     }
 
     public Instances replaceMissingValue(Instances dataset, String[] inputOptions) throws Exception {
@@ -147,8 +157,7 @@ public class DataProcessingService {
         if(inputOptions != null)
             replace.setOptions(inputOptions);
         replace.setInputFormat(dataset);
-        Instances newDataset = Filter.useFilter(dataset, replace);
-        return newDataset;
+        return Filter.useFilter(dataset, replace);
     }
 
     public Instances removeMissingValue(Instances dataset, String[] inputOptions) throws Exception {
@@ -156,8 +165,7 @@ public class DataProcessingService {
         if(inputOptions != null)
             remove.setOptions(inputOptions);
         remove.setInputFormat(dataset);
-        Instances newDataset = Filter.useFilter(dataset, remove);
-        return newDataset;
+        return Filter.useFilter(dataset, remove);
     }
 
     //Remove attributes with little to no impact to dataset
@@ -166,8 +174,7 @@ public class DataProcessingService {
         if(inputOptions != null)
             remove.setOptions(inputOptions);
         remove.setInputFormat(dataset);
-        Instances newDataset = Filter.useFilter(dataset, remove);
-        return newDataset;
+        return Filter.useFilter(dataset, remove);
     }
 
     //Turn String data in dataset into Nomial data that weka could read
@@ -177,8 +184,7 @@ public class DataProcessingService {
             filter.setOptions(inputOptions);
         filter.setAttributeRange("first-last"); 
         filter.setInputFormat(dataset);
-        Instances newDataset = Filter.useFilter(dataset, filter);
-        return newDataset;
+        return Filter.useFilter(dataset, filter);
     }
 
     //Rescales numeric values to [0,1]
@@ -187,8 +193,7 @@ public class DataProcessingService {
         if(inputOptions != null)
             normalize.setOptions(inputOptions);
         normalize.setInputFormat(dataset);
-        Instances newDataset = Filter.useFilter(dataset, normalize);
-        return newDataset;
+        return Filter.useFilter(dataset, normalize);
     }
 
     //Standardizes values (zero mean, unit variance)
@@ -197,8 +202,7 @@ public class DataProcessingService {
         if(inputOptions != null)
             standardize.setOptions(inputOptions);
         standardize.setInputFormat(dataset);
-        Instances newDataset = Filter.useFilter(dataset, standardize);
-        return newDataset;
+        return Filter.useFilter(dataset, standardize);
     }
 
     public Instances removeDuplication(Instances dataset, String[] inputOptions) throws Exception{
@@ -206,8 +210,7 @@ public class DataProcessingService {
         if(inputOptions != null)
             removeDuplicates.setOptions(inputOptions);
         removeDuplicates.setInputFormat(dataset);
-        Instances newDataset = Filter.useFilter(dataset, removeDuplicates);
-        return newDataset;
+        return Filter.useFilter(dataset, removeDuplicates);
     }
 
     public Instances numericToNomial(Instances dataset, String[] inputOptions) throws Exception{
@@ -215,8 +218,14 @@ public class DataProcessingService {
         if(inputOptions != null)
             numericToNominal.setOptions(inputOptions);
         numericToNominal.setInputFormat(dataset);
-        Instances newDataset = Filter.useFilter(dataset, numericToNominal);
-        return newDataset;
+        return Filter.useFilter(dataset, numericToNominal);
     }
 
+    public Instances remove(Instances dataset, String[] inputOptions) throws Exception{
+        Remove remove = new Remove();
+        if(inputOptions != null)
+            remove.setOptions(inputOptions);
+        remove.setInputFormat(dataset);
+        return Filter.useFilter(dataset, remove);
+    } 
 }

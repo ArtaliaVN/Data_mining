@@ -14,6 +14,7 @@ public class CommandLineService {
     private String currentCommand = "";
     private DatasetEntity datasetEntity;
     private DatasetEntity workingEntity;
+    private DatasetEntity testingEntity;
     private Classifier workingClassifier;
 
     private final DataProcessingService dataProcessingService;
@@ -36,6 +37,7 @@ public class CommandLineService {
                 this.datasetEntity = new DatasetEntity(scanner.nextLine()); 
                 this.workingEntity = this.datasetEntity;
                 System.out.println(this.datasetEntity.getDataset().toSummaryString());
+                System.out.println(this.datasetEntity.getDataset().enumerateAttributes());
             }
             System.out.println("Enter your command: ");
             currentCommand = scanner.nextLine(); 
@@ -52,6 +54,8 @@ public class CommandLineService {
                 case "reset" -> callReset();
                 case "index" -> callSetClassIndex(command2);
                 case "predict" -> callTesting(command2);
+                case "change_testing" -> callChangeTesting(command2);
+                case "change_dataset" -> callChangePath(command2);
                 default -> System.out.println("Invalid command");
             }
         } catch (Exception e){
@@ -81,14 +85,27 @@ public class CommandLineService {
 
     private void command(String command) throws Exception{
         List<String> list = commandProcessing(command);
-        if(list.size() == 1){
-            commandMapper(list.get(0), "", "");
+        switch(list.size()){
+            case 1 -> {
+                commandMapper(list.get(0), "", "");
+            }
+
+            case 2 -> {
+                commandMapper(list.get(0), list.get(1), "");
+            }
+
+            default -> {
+                commandMapper(list.get(0), list.get(1), list.get(2));
+            }
         }
-        if(list.size() == 2){
-            commandMapper(list.get(0), list.get(1), "");
-        }
-        if(list.size() >= 3){
-            commandMapper(list.get(0), list.get(1), list.get(2));
+    }
+
+    private void callSetDataset(String path){
+        try {
+            this.datasetEntity = new DatasetEntity(path);
+            this.workingEntity = this.datasetEntity;
+        } catch (Exception e) {
+            System.err.println("Invalid input dataset:"+e.getMessage());
         }
     }
 
@@ -107,15 +124,35 @@ public class CommandLineService {
         System.out.println("Working data has been reset");
     }
 
-    private void callTesting(String path) throws Exception{
-        DatasetEntity testingEntity = new DatasetEntity(path);
-        testingEntity.getDataset().setClassIndex(workingEntity.getDataset().classIndex());
-        if(workingClassifier == null){
-            System.err.println("This action requires classification");
+    private void callChangeTesting(final String path) throws Exception {
+        DatasetEntity newTest = new DatasetEntity(path);
+        if (newTest.getDataset() == null) {
+            System.out.println("Failed to load testing dataset from: " + path);
             return;
         }
+        newTest.getDataset().setClassIndex(this.workingEntity.getDataset().classIndex());
+        this.testingEntity = newTest;
+        System.out.println("Testing dataset has been updated:");
+        System.out.println(this.testingEntity.getDataset().toSummaryString());
+    }
 
-        System.out.println(dataTestingService.evaluation(workingEntity.getDataset(), testingEntity.getDataset(), workingClassifier));
+    private void callChangePath(final String path) throws Exception {
+        DatasetEntity newData = new DatasetEntity(path);
+        if (newData.getDataset() == null) {
+            System.out.println("Failed to load dataset from: " + path);
+            return;
+        }
+        this.datasetEntity = newData;
+        this.workingEntity = newData;
+        System.out.println("Main dataset has been changed:");
+        System.out.println(this.datasetEntity.getDataset().toSummaryString());
+    }
+
+    private void callTesting(String options) throws Exception{
+        if(testingEntity == null){
+            System.out.println("Path to testing dataset (arff or csv): ");
+        }
+        System.out.println(dataTestingService.evaluation(workingEntity.getDataset(), testingEntity.getDataset(), workingClassifier, Utils.splitOptions(options)));
     }
 
     private void callSetClassIndex(String inputIndex) throws Exception{
@@ -126,6 +163,7 @@ public class CommandLineService {
         }
 
         workingEntity.getDataset().setClassIndex(index);
+
         System.out.println("New class index:" + workingEntity.getDataset().classIndex());
     }
 

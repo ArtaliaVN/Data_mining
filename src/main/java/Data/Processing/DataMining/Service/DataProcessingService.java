@@ -4,6 +4,10 @@ import java.io.File;
 import weka.core.Instances;
 import weka.core.converters.ArffSaver;
 import weka.filters.Filter;
+<<<<<<< Updated upstream
+=======
+import weka.filters.supervised.instance.SpreadSubsample;
+>>>>>>> Stashed changes
 import weka.filters.unsupervised.attribute.Discretize;
 import weka.filters.unsupervised.attribute.Normalize;
 import weka.filters.unsupervised.attribute.NumericCleaner;
@@ -16,6 +20,10 @@ import weka.filters.unsupervised.attribute.StringToNominal;
 import weka.filters.unsupervised.instance.NonSparseToSparse;
 import weka.filters.unsupervised.instance.RemoveDuplicates;
 import weka.filters.unsupervised.instance.RemoveWithValues;
+<<<<<<< Updated upstream
+=======
+import weka.filters.unsupervised.instance.Resample;
+>>>>>>> Stashed changes
 
 public class DataProcessingService {
 
@@ -34,7 +42,13 @@ public class DataProcessingService {
             case "string_to_nomial" -> stringToNomial(dataset, inputOptions);
             case "remove_attributes" -> removeAttributes(dataset, inputOptions);
             case "sparse_data" -> sparseData(dataset);
+<<<<<<< Updated upstream
             case "numeric_cleaner" -> numericCleaner(dataset, inputOptions);
+=======
+            case "unsupervised_resample" -> resample(dataset, inputOptions);
+            case "supervised" -> resampleSupervised(dataset, inputOptions);
+            case "spread_supsample" -> spreadSubsample(dataset, inputOptions);
+>>>>>>> Stashed changes
             default -> dataset;
         };
     }
@@ -227,5 +241,30 @@ public class DataProcessingService {
             remove.setOptions(inputOptions);
         remove.setInputFormat(dataset);
         return Filter.useFilter(dataset, remove);
+<<<<<<< Updated upstream
     } 
+=======
+    }
+
+    public Instances resample(Instances dataset, String[] inputOptions) throws Exception {
+        Resample resample = new Resample();
+        if(inputOptions != null)
+            resample.setOptions(inputOptions);
+        return Filter.useFilter(dataset, resample);
+    }
+
+    public Instances resampleSupervised(Instances dataset, String[] inputOptions) throws Exception {
+        weka.filters.supervised.instance.Resample resample = new weka.filters.supervised.instance.Resample();
+        if(inputOptions != null)
+            resample.setOptions(inputOptions);
+        return Filter.useFilter(dataset, resample);
+    }
+
+    public Instances spreadSubsample(Instances dataset, String[] inputOptions) throws Exception {
+        SpreadSubsample spreadSubsample = new SpreadSubsample();
+        if(inputOptions != null)
+            spreadSubsample.setOptions(inputOptions);
+        return Filter.useFilter(dataset, spreadSubsample);
+    }
+>>>>>>> Stashed changes
 }

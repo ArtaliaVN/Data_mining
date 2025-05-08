@@ -1,8 +1,10 @@
 package Data.Processing.DataMining.Service;
 
 import weka.classifiers.Classifier;
+import weka.classifiers.UpdateableClassifier;
 import weka.classifiers.bayes.BayesNet;
 import weka.classifiers.bayes.NaiveBayes;
+import weka.classifiers.bayes.NaiveBayesUpdateable;
 import weka.classifiers.rules.OneR;
 import weka.classifiers.rules.ZeroR;
 import weka.classifiers.trees.J48;
@@ -62,5 +64,8 @@ public class DataClassificationService {
         return bayesNet;
     }
 
+<<<<<<< Updated upstream
     
+=======
+>>>>>>> Stashed changes
 }
